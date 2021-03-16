@@ -1,6 +1,6 @@
 import card from './card';
 
-export default class user {
+export default class player {
   handCard: card[];
   constructor(handcard: card) {
     this.handCard = [handcard];

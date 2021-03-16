@@ -26,6 +26,7 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "morgan": "^1.10.0",
-    "socket.io": "^4.0.0"
+    "socket.io": "^4.0.0",
+    "xstate": "^4.16.2"
   }
 }
