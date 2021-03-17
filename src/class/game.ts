@@ -1,4 +1,13 @@
-import card, { Guard } from './card';
+import card, {
+  Guard,
+  Priest,
+  Baron,
+  Handmaid,
+  Prince,
+  King,
+  Countess,
+  Princss,
+} from './card';
 import player from './player';
 
 export default class game {
@@ -8,8 +17,24 @@ export default class game {
     ///// make the deck
     this.deck = [];
     for (let i = 0; i < 5; i++) {
-      this.deck.push(new Guard('', ''));
+      this.deck.push(new Guard());
     }
+    for (let i = 0; i < 2; i++) {
+      this.deck.push(new Priest());
+    }
+    for (let i = 0; i < 2; i++) {
+      this.deck.push(new Baron());
+    }
+    for (let i = 0; i < 2; i++) {
+      this.deck.push(new Handmaid());
+    }
+    for (let i = 0; i < 2; i++) {
+      this.deck.push(new Prince());
+    }
+
+    this.deck.push(new King());
+    this.deck.push(new Countess());
+    this.deck.push(new Princss());
 
     shuffle(this.deck);
 

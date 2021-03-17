@@ -1,65 +1,67 @@
 export default class Card {
   title: string;
   content: string;
+  value: number;
 
-  constructor(title: string, content: string) {
+  constructor(title: string, content: string, value: number) {
     this.title = title;
     this.content = content;
+    this.value = value;
   }
 }
 
-export class Handmaid extends Card {
-  super() {
-    this.title = 'handmaid';
-    this.content = '一輪內不受其他牌影響';
-  }
-}
-
-export class Countess extends Card {
-  super() {
-    this.title = 'countess';
-    this.content = '手上有國王或王子時必須棄掉';
-  }
-}
-
-export class Baron extends Card {
-  super() {
-    this.title = 'baron';
-    this.content = '和一名對手比手牌,小者出局';
-  }
-}
-
-export class King extends Card {
-  super() {
-    this.title = 'king';
-    this.content = '和對手交換手牌';
-  }
-}
-
-export class Priest extends Card {
-  super() {
-    this.title = 'priest';
-    this.content = '看一名對手手牌';
-  }
-}
-
-export class Prince extends Card {
-  super() {
-    this.title = 'prince';
-    this.content = '一名玩家棄掉手牌重抽';
-  }
-}
-
+// 1 衛兵
 export class Guard extends Card {
-  super() {
-    this.title = 'guard';
-    this.content = '猜一名對手手牌';
+  constructor() {
+    super('guard', '猜一名對手手牌', 1);
   }
 }
 
-export class princss extends Card {
-  super() {
-    this.title = 'priness';
-    this.content = '棄掉公主時出局';
+// 2 神父
+export class Priest extends Card {
+  constructor() {
+    super('priest', '看一名對手手牌', 2);
+  }
+}
+
+// 3 男爵
+export class Baron extends Card {
+  constructor() {
+    super('baron', '和一名對手比手牌,小者出局', 3);
+  }
+}
+
+// 4 侍女
+export class Handmaid extends Card {
+  constructor() {
+    super('handmaid', '一輪內不受其他牌影響', 4);
+  }
+}
+
+// 5 王子
+export class Prince extends Card {
+  constructor() {
+    super('prince', '一名玩家棄掉手牌重抽', 5);
+  }
+}
+
+// 6 國王
+export class King extends Card {
+  constructor() {
+    super('king', '和對手交換手牌', 6);
+  }
+}
+
+// 8 伯爵夫人
+export class Countess extends Card {
+  constructor() {
+    super('countess', '手上有國王或王子時必須棄掉', 8);
+  }
+}
+
+// 9 公主
+export class Princss extends Card {
+  constructor() {
+    super('priness', '棄掉公主時出局', 9);
   }
 }
