@@ -1,4 +1,4 @@
-export default class Card {
+export default abstract class Card {
   title: string;
   content: string;
   value: number;
