@@ -1,9 +1,13 @@
 import card from './card';
 
-export default class player {
+export default class Player {
   handCard: card[];
-  constructor(handcard: card) {
-    this.handCard = [handcard];
+  id: string;
+  name: string;
+  constructor(id: string, name: string) {
+    this.id = id;
+    this.name = name;
+    this.handCard = [];
   }
   playCard(index: number): boolean {
     if (index >= this.handCard.length) {

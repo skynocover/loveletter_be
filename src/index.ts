@@ -1,13 +1,15 @@
 import 'dotenv/config';
 
 import path from 'path';
-import dayjs from 'dayjs';
 
 import express, { Request, Response, NextFunction } from 'express';
 import morgan from 'morgan';
-import socketio from 'socket.io';
+
+import { init } from './socket/socket';
+
 import { apiHistory } from './apiagent/history';
-import history from './globals/history';
+import { apiBoard } from './apiagent/board';
+
 const app = express();
 
 app.use(express.json());
@@ -23,6 +25,7 @@ app.get('/version', (req, res) => {
 });
 
 app.use('/api', apiHistory);
+app.use('/api', apiBoard);
 
 let server = app.listen(process.env.PORT, () => {
   console.log(new Date(), `env: ${process.env.NODE_ENV}`);
@@ -30,28 +33,4 @@ let server = app.listen(process.env.PORT, () => {
   console.log(new Date(), `server listening on ${process.env.PORT}`);
 });
 
-const io = socketio(server);
-
-io.on('connection', (socket) => {
-  // console.log(socket.id);
-  let newhistory = history.push(
-    '玩家連線',
-    `id: ${socket.id}, time: ${dayjs().format('HH:mm:ss')}`,
-  );
-  io.emit('newHistory', newhistory);
-  // socket.emit('welcom', 1, 2, 5);
-  // socket.join('game');
-
-  socket.on('msg', (data) => {
-    console.log(data);
-    socket.emit('welcome', { newData: 'newData' });
-  });
-
-  socket.on('disconnect', (reason) => {
-    let newhistory = history.push(
-      '玩家離線',
-      `id: ${socket.id}, time: ${dayjs().format('HH:mm:ss')}`,
-    );
-    io.emit('newHistory', newhistory);
-  });
-});
+init(server);

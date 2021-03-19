@@ -10,9 +10,9 @@ import card, {
 } from './card';
 import player from './player';
 
-export default class game {
+export default class Game {
   deck: card[];
-  players: player[];
+  //   players: player[];
   constructor(playNum: number) {
     ///// make the deck
     this.deck = [];
@@ -38,13 +38,13 @@ export default class game {
 
     shuffle(this.deck);
 
-    this.players = [];
-    for (let i = 0; i < playNum; i++) {
-      let top = this.deck.pop();
-      if (top) {
-        this.players.push(new player(top));
-      }
-    }
+    //     this.players = [];
+    //     for (let i = 0; i < playNum; i++) {
+    //       let top = this.deck.pop();
+    //       if (top) {
+    //         this.players.push(new player(top));
+    //       }
+    //     }
   }
 }
 
