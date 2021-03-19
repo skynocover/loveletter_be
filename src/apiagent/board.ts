@@ -20,7 +20,7 @@ routes.post('/players', (req, res) => {
     return;
   }
   board.newPlayer(player.id, player.name);
-  io().emit('newPlayer', player);
+  io().emit('player', { action: 'add', player });
   res.status(200).json({ errorCode: 0 });
 });
 

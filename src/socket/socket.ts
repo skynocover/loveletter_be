@@ -31,6 +31,8 @@ export const init = (server: http.Server) => {
         `id: ${socket.id}, time: ${dayjs().format('HH:mm:ss')}`,
       );
       _io.emit('newHistory', newhistory);
+      _io.emit('player', { action: 'del', id: socket.id });
+
       board.delPlayer(socket.id);
     });
   });
