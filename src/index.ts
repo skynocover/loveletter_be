@@ -8,7 +8,8 @@ import morgan from 'morgan';
 import { init } from './socket/socket';
 
 import { apiHistory } from './apiagent/history';
-import { apiBoard } from './apiagent/board';
+import { apiPlayers } from './apiagent/players';
+import { apiGame } from './apiagent/game';
 
 const app = express();
 
@@ -25,7 +26,8 @@ app.get('/version', (req, res) => {
 });
 
 app.use('/api', apiHistory);
-app.use('/api', apiBoard);
+app.use('/api', apiPlayers);
+app.use('/api', apiGame);
 
 let server = app.listen(process.env.PORT, () => {
   console.log(new Date(), `env: ${process.env.NODE_ENV}`);

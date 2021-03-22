@@ -25,6 +25,25 @@ class Board {
       this.players.splice(index, 1);
     }
   }
+
+  readyPlayer(name: string, ready: boolean) {
+    for (const player of this.players) {
+      if (player.name === name) {
+        player.ready = ready;
+      }
+    }
+  }
+
+  startGame() {
+    let unReadyPlayer = this.players.filter((item) => {
+      return item.ready === false;
+    });
+    if (unReadyPlayer.length === 0) {
+      return false;
+    } else {
+      return true;
+    }
+  }
 }
 
 const board = new Board();
