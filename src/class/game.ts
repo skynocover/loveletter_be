@@ -10,10 +10,13 @@ import card, {
 } from './card';
 import player from './player';
 
+import { io } from '../socket/socket';
+
 export default class Game {
   deck: card[];
+  players: player[];
   //   players: player[];
-  constructor(playNum: number) {
+  constructor(players: player[]) {
     ///// make the deck
     this.deck = [];
     for (let i = 0; i < 5; i++) {
@@ -38,13 +41,31 @@ export default class Game {
 
     shuffle(this.deck);
 
-    //     this.players = [];
-    //     for (let i = 0; i < playNum; i++) {
-    //       let top = this.deck.pop();
-    //       if (top) {
-    //         this.players.push(new player(top));
-    //       }
-    //     }
+    this.players = [...players];
+    shuffle(this.players);
+
+    for (const player1 of this.players) {
+      let popCard = this.deck.pop();
+      if (popCard) {
+        io().to(player1.id).emit('draw', popCard.title);
+        player1.drawCard(popCard);
+      }
+    }
+
+    console.log('new Deck: ' + JSON.stringify(this.deck));
+    console.log('new player: ' + JSON.stringify(this.players));
+  }
+
+  drawCard() {
+    let popCard = this.deck.pop();
+    let popPlayer = this.players.pop();
+    if (popCard && popPlayer) {
+      popPlayer.drawCard(popCard);
+      this.players.unshift(popPlayer);
+      console.log(JSON.stringify(this.players));
+      return true;
+    }
+    return false;
   }
 }
 

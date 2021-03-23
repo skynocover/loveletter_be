@@ -43,7 +43,7 @@ class Board {
       return false;
     }
 
-    GameService.send('Ready');
+    GameService.send('Ready', { players: this.players });
 
     let unReadyPlayer = this.players.filter((item) => {
       return item.ready === false;
@@ -58,7 +58,7 @@ class Board {
   restartGame() {
     GameService.send('Restart');
 
-    this.constructor();
+    // this.constructor();
   }
 }
 
