@@ -1,9 +1,13 @@
 import player from './player';
+import GameService from '../game/machine';
+import card from './card';
 
 class Board {
   private players: player[];
+  private deck: card[];
   constructor() {
     this.players = [];
+    this.deck = [];
   }
 
   newPlayer(id: string, name: string) {
@@ -35,14 +39,26 @@ class Board {
   }
 
   startGame() {
+    if (this.players.length < 1 || this.players.length > 5) {
+      return false;
+    }
+
+    GameService.send('Ready');
+
     let unReadyPlayer = this.players.filter((item) => {
       return item.ready === false;
     });
     if (unReadyPlayer.length === 0) {
-      return false;
-    } else {
       return true;
+    } else {
+      return false;
     }
+  }
+
+  restartGame() {
+    GameService.send('Restart');
+
+    this.constructor();
   }
 }
 

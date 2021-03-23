@@ -47,6 +47,8 @@ routes.delete('/players/ready/:name', (req, res) => {
   board.readyPlayer(name, false);
   io().emit('player', 'unReady', name);
   res.status(200).json({ ...Resp.success });
+
+  console.log(board.allPlayers());
 });
 
 export { routes as apiPlayers };
