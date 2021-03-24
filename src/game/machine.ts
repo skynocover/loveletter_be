@@ -1,5 +1,6 @@
 import { Machine, interpret, assign } from 'xstate';
 import Game from '../class/game';
+import { io } from '../socket/socket';
 
 let game: Game;
 
@@ -30,6 +31,7 @@ const GameMachine = Machine(
         },
         onEntry: (state, context) => {
           //進入
+          io().emit('gameState', 'Ready');
           game = new Game(context.players);
           console.log('entry state: ' + state);
           console.log('entry context: ' + JSON.stringify(context));

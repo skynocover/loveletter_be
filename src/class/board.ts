@@ -43,12 +43,11 @@ class Board {
       return false;
     }
 
-    GameService.send('Ready', { players: this.players });
-
     let unReadyPlayer = this.players.filter((item) => {
       return item.ready === false;
     });
     if (unReadyPlayer.length === 0) {
+      GameService.send('Ready', { players: this.players });
       return true;
     } else {
       return false;

@@ -16,9 +16,9 @@ routes.post('/game/start', (req, res) => {
 
 routes.post('/game/restart', (req, res) => {
   board.restartGame();
-  getConnectedSockets().forEach((s) => {
-    s.disconnect(true);
-  });
+  //   getConnectedSockets().forEach((s) => {
+  //     s.disconnect(true);
+  //   });
 });
 
 function getConnectedSockets() {

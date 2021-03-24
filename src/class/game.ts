@@ -63,6 +63,7 @@ export default class Game {
       popPlayer.drawCard(popCard);
       this.players.unshift(popPlayer);
       console.log(JSON.stringify(this.players));
+      io().to(popPlayer.id).emit('draw', popCard.title);
       return true;
     }
     return false;
