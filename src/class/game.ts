@@ -52,8 +52,10 @@ export default class Game {
       }
     }
 
-    console.log('new Deck: ' + JSON.stringify(this.deck));
-    console.log('new player: ' + JSON.stringify(this.players));
+    this.drawCard();
+
+    // console.log('new Deck: ' + JSON.stringify(this.deck));
+    // console.log('new player: ' + JSON.stringify(this.players));
   }
 
   drawCard() {
@@ -67,6 +69,17 @@ export default class Game {
       return true;
     }
     return false;
+  }
+  currentPlayer() {
+    return this.players[this.players.length - 1];
+  }
+  playCard(id: string, card: number) {
+    console.log('game. playcard: ', id, card);
+
+    let popPlayer = this.players.pop();
+    if (popPlayer) {
+      popPlayer.playCard(card);
+    }
   }
 }
 

@@ -59,6 +59,10 @@ class Board {
 
     // this.constructor();
   }
+
+  playCard(id: string, card: number) {
+    GameService.send('PlayCard', { id, card });
+  }
 }
 
 const board = new Board();

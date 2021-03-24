@@ -16,6 +16,14 @@ const GameMachine = Machine(
             actions: ['start'],
           }, //事件: 更新狀態
         },
+        onEntry: (state, context) => {
+          //進入
+          try {
+            io().emit('gameState', 'Restart');
+          } catch (error) {
+            console.log('entry: ', error);
+          }
+        },
       },
       start: {
         on: {
@@ -26,6 +34,16 @@ const GameMachine = Machine(
             target: 'play',
             actions: (playerNum: any) => {
               console.log(playerNum);
+            },
+          },
+          PlayCard: {
+            actions: (id: any, card: any) => {
+              if (id !== game.currentPlayer().id) {
+                return false;
+              }
+              console.log('state.id,card: ', id, card);
+              game.playCard(id, card);
+              return true;
             },
           },
         },
@@ -48,9 +66,6 @@ const GameMachine = Machine(
           //進入
           console.log('entry state: ' + state);
           console.log('entry context: ' + JSON.stringify(context));
-          if (!game.drawCard()) {
-            target: 'finally';
-          }
         },
       },
       finally: {

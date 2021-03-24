@@ -19,6 +19,16 @@ routes.post('/game/restart', (req, res) => {
   //   getConnectedSockets().forEach((s) => {
   //     s.disconnect(true);
   //   });
+  res.status(200).json(Resp.success);
+});
+
+routes.post('/game/playCard', (req, res) => {
+  if (req.body.id === null || req.body.card === null) {
+    res.status(200).json(Resp.paramInputEmpty);
+    return;
+  }
+  board.playCard(req.body.id, req.body.card);
+  res.status(200).json(Resp.success);
 });
 
 function getConnectedSockets() {
