@@ -19,7 +19,7 @@ const GameMachine = Machine(
         onEntry: (state, context) => {
           //進入
           try {
-            io().emit('gameState', 'Restart');
+            // io().emit('gameState', 'Restart');
           } catch (error) {
             console.log('entry: ', error);
           }
@@ -50,7 +50,7 @@ const GameMachine = Machine(
         onEntry: (state, context) => {
           //進入
           io().emit('gameState', 'Ready');
-          game = new Game(context.players);
+          game = new Game(context.players, '');
           console.log('entry state: ' + state);
           console.log('entry context: ' + JSON.stringify(context));
         },
@@ -82,7 +82,7 @@ const GameMachine = Machine(
       start: (context, event) => {
         console.log('context: ' + context);
         console.log('event: ' + JSON.stringify(event));
-        game = new Game(event.players);
+        game = new Game(event.players, '');
       },
     },
   },

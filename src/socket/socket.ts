@@ -11,7 +11,7 @@ export const init = (server: http.Server) => {
   _io = socketio(server);
 
   _io.on('connection', (socket) => {
-    // console.log(socket.id);
+    console.log(socket.id, ' is connection');
     let newhistory = history.push(
       '玩家連線',
       `id: ${socket.id}, time: ${dayjs().format('HH:mm:ss')}`,
@@ -26,6 +26,7 @@ export const init = (server: http.Server) => {
     });
 
     socket.on('disconnect', (reason) => {
+      console.log(socket.id, ' is disconnect');
       let newhistory = history.push(
         '玩家離線',
         `id: ${socket.id}, time: ${dayjs().format('HH:mm:ss')}`,

@@ -7,21 +7,20 @@ import { Resp } from '../resp/resp';
 const routes = express.Router();
 
 routes.get('/players', (req, res) => {
-  //   console.log(history.get());
-
   console.log(board.allPlayers());
   res.status(200).json({ ...Resp.success, players: board.allPlayers() });
 });
 
 routes.post('/players', (req, res) => {
-  let player = req.body.player;
-  console.log(player);
-  if (player.id === undefined || player.name === undefined) {
+  let newPlayer = req.body.player;
+  if (newPlayer.id === undefined || newPlayer.name === undefined) {
     res.status(404).json({ ...Resp.paramInputEmpty });
     return;
   }
-  board.newPlayer(player.id, player.name);
-  io().emit('player', 'add', player);
+
+  board.BoardMachine.send('Join', { newPlayer });
+  // board.newPlayer(player.id, player.name);
+  // io().emit('player', 'add', player);
   res.status(200).json({ ...Resp.success });
 });
 
@@ -31,11 +30,12 @@ routes.post('/players/ready/:name', (req, res) => {
     res.status(404).json({ ...Resp.paramInputEmpty });
     return;
   }
-  board.readyPlayer(name, true);
-  io().emit('player', 'ready', name);
+  // board.readyPlayer(name, true);
+  board.BoardMachine.send('Ready', { name, ready: true });
+
   res.status(200).json({ ...Resp.success });
 
-  console.log(board.allPlayers());
+  // console.log(board.allPlayers());
 });
 
 routes.delete('/players/ready/:name', (req, res) => {
@@ -44,11 +44,12 @@ routes.delete('/players/ready/:name', (req, res) => {
     res.status(200).json(Resp.paramInputEmpty);
     return;
   }
-  board.readyPlayer(name, false);
-  io().emit('player', 'unReady', name);
+  board.BoardMachine.send('Ready', { name, ready: false });
+  // board.readyPlayer(name, false);
+  // io().emit('player', 'unReady', name);
   res.status(200).json({ ...Resp.success });
 
-  console.log(board.allPlayers());
+  // console.log(board.allPlayers());
 });
 
 export { routes as apiPlayers };

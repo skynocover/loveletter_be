@@ -19,8 +19,6 @@ app.use(morgan('dev'));
 
 app.use(express.static(path.resolve(__dirname, '../public')));
 
-// const server = require('http').Server(app);
-
 app.get('/version', (req, res) => {
   res.json({ env: process.env.NODE_ENV, version: process.env.VERSION });
 });

@@ -1,17 +1,91 @@
 import player from './player';
 import GameService from '../game/machine';
 import card from './card';
+import { io } from '../socket/socket';
+import Game from './game';
+import { v4 as uuidv4 } from 'uuid';
+
+import {
+  Machine,
+  interpret,
+  Interpreter,
+  assign,
+  StateMachine,
+  AnyEventObject,
+} from 'xstate';
 
 class Board {
   private players: player[];
-  private deck: card[];
+  public BoardMachine: Interpreter<
+    any,
+    any,
+    AnyEventObject,
+    {
+      value: any;
+      context: any;
+    }
+  >;
+
+  public Games: Map<string, Game>;
   constructor() {
     this.players = [];
-    this.deck = [];
+    this.BoardMachine = this.createMachine();
+    this.Games = new Map<string, Game>();
   }
 
-  newPlayer(id: string, name: string) {
-    this.players.push(new player(id, name));
+  createMachine() {
+    const BoardMachine = Machine({
+      id: 'board',
+      initial: 'beforeStart',
+      states: {
+        beforeStart: {
+          on: {
+            Join: {
+              actions: (context: any, event: any) => {
+                let newPlayer = event.newPlayer;
+                console.log('machine join: ', newPlayer);
+                this.players.push(new player(newPlayer.id, newPlayer.name));
+                io().emit('player', 'add', newPlayer);
+              },
+            },
+            Ready: {
+              actions: (context: any, event: any) => {
+                console.log(event);
+                let name = event.name;
+                let ready = event.ready;
+
+                for (const player of this.players) {
+                  if (player.name === name) {
+                    player.ready = ready;
+                    break;
+                  }
+                }
+                io().emit('player', ready ? 'ready' : 'unReady', name);
+              },
+            },
+            Start: 'start',
+          },
+        },
+        start: {
+          on: {
+            Ready: { actions: () => {} },
+            Start: { target: 'beforeStart', actions: () => {} },
+          },
+          onExit: () => {
+            io().emit('Game', 'start');
+          }, //退出
+          onEntry: (state, context) => {
+            let roomID = uuidv4();
+            let newGame = new Game(this.players, roomID);
+            this.Games.set(roomID, newGame);
+          },
+        },
+      },
+    });
+
+    return interpret(BoardMachine)
+      .onTransition((state, context) => {})
+      .start();
   }
 
   allPlayers() {
@@ -30,14 +104,6 @@ class Board {
     }
   }
 
-  readyPlayer(name: string, ready: boolean) {
-    for (const player of this.players) {
-      if (player.name === name) {
-        player.ready = ready;
-      }
-    }
-  }
-
   startGame() {
     if (this.players.length < 1 || this.players.length > 5) {
       return false;
@@ -46,8 +112,11 @@ class Board {
     let unReadyPlayer = this.players.filter((item) => {
       return item.ready === false;
     });
+
     if (unReadyPlayer.length === 0) {
-      GameService.send('Ready', { players: this.players });
+      // GameService.send('Ready', { players: this.players });
+      this.BoardMachine.send('Start');
+
       return true;
     } else {
       return false;
@@ -62,6 +131,11 @@ class Board {
 
   playCard(id: string, card: number) {
     GameService.send('PlayCard', { id, card });
+  }
+
+  gameReady(roomID: string, playerName: string) {
+    let game = this.Games.get(roomID);
+    game?.GameMachine.send;
   }
 }
 
