@@ -22,6 +22,11 @@ routes.post('/game/restart', (req, res) => {
   res.status(200).json(Resp.success);
 });
 
+routes.post('/game/ready', (req, res) => {
+  let roomID = req.body.roomID;
+  let name = req.body.name;
+});
+
 routes.post('/game/playCard', (req, res) => {
   if (req.body.id === null || req.body.card === null) {
     res.status(200).json(Resp.paramInputEmpty);
