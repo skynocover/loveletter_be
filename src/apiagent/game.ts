@@ -15,7 +15,8 @@ routes.post('/game/start', (req, res) => {
 });
 
 routes.post('/game/restart', (req, res) => {
-  board.restartGame();
+  console.log('game restart api, roomID: ', req.body.roomID);
+  board.restartGame(req.body.roomID);
   //   getConnectedSockets().forEach((s) => {
   //     s.disconnect(true);
   //   });
@@ -24,7 +25,10 @@ routes.post('/game/restart', (req, res) => {
 
 routes.post('/game/ready', (req, res) => {
   let roomID = req.body.roomID;
-  let name = req.body.name;
+  let playerID = req.body.playerID;
+  console.log(`roomID: ${roomID}, playerID: ${playerID}`);
+  board.gameReady(roomID, playerID);
+  res.status(200).json(Resp.success);
 });
 
 routes.post('/game/playCard', (req, res) => {

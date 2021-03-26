@@ -69,14 +69,16 @@ class Board {
         start: {
           on: {
             Ready: { actions: () => {} },
-            Start: { target: 'beforeStart', actions: () => {} },
+            Restart: { target: 'beforeStart', actions: () => {} },
+            Finish: 'beforeStart',
           },
           onExit: () => {
-            io().emit('Game', 'start');
+            // io().emit('Game', 'start');
           }, //退出
           onEntry: (state, context) => {
             let roomID = uuidv4();
             let newGame = new Game(this.players, roomID);
+            this.players = [];
             this.Games.set(roomID, newGame);
           },
         },
@@ -88,7 +90,11 @@ class Board {
       .start();
   }
 
-  allPlayers() {
+  allPlayers(roomID: string) {
+    if (roomID !== 'none') {
+      let room = this.Games.get(roomID);
+      return room?.allPlayers();
+    }
     return this.players;
   }
 
@@ -123,19 +129,26 @@ class Board {
     }
   }
 
-  restartGame() {
-    GameService.send('Restart');
-
-    // this.constructor();
+  restartGame(roomID: string) {
+    let room = this.Games.get(roomID);
+    if (room) {
+      for (const p of room.players) {
+        this.players.push(p);
+      }
+    }
+    this.Games.delete(roomID);
   }
 
   playCard(id: string, card: number) {
     GameService.send('PlayCard', { id, card });
   }
 
-  gameReady(roomID: string, playerName: string) {
+  gameReady(roomID: string, playerID: string) {
     let game = this.Games.get(roomID);
-    game?.GameMachine.send;
+    console.log(playerID);
+    if (game?.ready(playerID)) {
+      this.BoardMachine.send('Finish');
+    }
   }
 }
 

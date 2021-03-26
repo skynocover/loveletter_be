@@ -6,9 +6,12 @@ import { Resp } from '../resp/resp';
 
 const routes = express.Router();
 
-routes.get('/players', (req, res) => {
-  console.log(board.allPlayers());
-  res.status(200).json({ ...Resp.success, players: board.allPlayers() });
+routes.get('/players/:roomID', (req, res) => {
+  let roomID = req.params.roomID;
+  console.log('RoomID: ', roomID);
+
+  console.log(board.allPlayers(roomID));
+  res.status(200).json({ ...Resp.success, players: board.allPlayers(roomID) });
 });
 
 routes.post('/players', (req, res) => {

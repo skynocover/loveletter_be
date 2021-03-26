@@ -62,6 +62,15 @@ export default class Game {
           on: {
             Start: 'roundStart',
           },
+          onEntry: (state, context) => {
+            let ns = io().of('/');
+            for (const p of this.players) {
+              let socket = ns.connected[p.id];
+              console.log(`socket ${p.id} join: ${this.id}`);
+              socket.join(this.id);
+            }
+            io().emit('Game', 'Start', this.id);
+          },
         },
         roundStart: {
           on: {
@@ -74,7 +83,7 @@ export default class Game {
             if (popCard && popPlayer) {
               popPlayer.drawCard(popCard);
               this.players.unshift(popPlayer);
-              console.log(JSON.stringify(this.players));
+              console.log(JSON.stringify(popPlayer));
               io().to(popPlayer.id).emit('draw', popCard.title);
               return true;
             }
@@ -92,17 +101,27 @@ export default class Game {
       .start();
   }
 
-  ready(name: string) {
+  allPlayers() {
+    return this.players;
+  }
+
+  ready(playerID: string) {
     let i = 0;
+    console.log(`${playerID} game ready!!!`);
     for (const p of this.players) {
-      if (p.name === name) {
+      if (p.id === playerID) {
         p.ready = true;
         i++;
       } else if (p.ready) {
         i++;
       }
     }
-    return i === this.players.length;
+    if (i === this.players.length) {
+      console.log('game ready, start!');
+      this.GameMachine.send('Start');
+      return true;
+    }
+    return false;
   }
 
   currentPlayer() {
