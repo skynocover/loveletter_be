@@ -64,18 +64,21 @@ export default class Game {
           },
           onEntry: (state, context) => {
             let ns = io().of('/');
+            let playersName: string[] = [];
             for (const p of this.players) {
               let socket = ns.connected[p.id];
               console.log(`socket ${p.id} join: ${this.id}`);
               socket.join(this.id);
+              playersName.push(p.name);
             }
-            io().emit('Game', 'Start', this.id);
+            io().emit('Game', 'Start', this.id, playersName);
           },
         },
         roundStart: {
           on: {
             Ready: { actions: () => {} },
             Start: { target: 'beforeStart', actions: () => {} },
+            Next: { target: 'roundStart' },
           },
           onEntry: () => {
             let popCard = this.deck.pop();

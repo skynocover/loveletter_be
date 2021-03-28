@@ -10,8 +10,8 @@ routes.get('/players/:roomID', (req, res) => {
   let roomID = req.params.roomID;
   console.log('RoomID: ', roomID);
 
-  console.log(board.allPlayers(roomID));
-  res.status(200).json({ ...Resp.success, players: board.allPlayers(roomID) });
+  let players = board.allPlayers(roomID);
+  res.status(200).json({ ...Resp.success, players });
 });
 
 routes.post('/players', (req, res) => {

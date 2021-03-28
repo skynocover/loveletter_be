@@ -16,6 +16,7 @@ import {
 
 class Board {
   private players: player[];
+  private lobby: player[];
   public BoardMachine: Interpreter<
     any,
     any,
@@ -29,6 +30,7 @@ class Board {
   public Games: Map<string, Game>;
   constructor() {
     this.players = [];
+    this.lobby = [];
     this.BoardMachine = this.createMachine();
     this.Games = new Map<string, Game>();
   }
@@ -133,10 +135,13 @@ class Board {
     let room = this.Games.get(roomID);
     if (room) {
       for (const p of room.players) {
+        p.handCard = [];
+        p.ready = false;
         this.players.push(p);
       }
     }
     this.Games.delete(roomID);
+    io().to(roomID).emit('Game', 'ReStart');
   }
 
   playCard(id: string, card: number) {
