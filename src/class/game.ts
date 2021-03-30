@@ -78,7 +78,7 @@ export default class Game {
           on: {
             Ready: { actions: () => {} },
             Start: { target: 'beforeStart', actions: () => {} },
-            Next: { target: 'roundStart' },
+            Play: { target: 'roundStart' },
           },
           onEntry: () => {
             let popCard = this.deck.pop();
@@ -93,7 +93,8 @@ export default class Game {
             return false;
           },
           onExit: () => {
-            io().emit('Game', 'start');
+            console.log('exit roundStart');
+            // io().emit('Game', 'start');
           }, //退出
         },
       },
@@ -132,11 +133,14 @@ export default class Game {
   }
   playCard(id: string, card: number) {
     console.log('game. playcard: ', id, card);
-
-    let popPlayer = this.players.pop();
-    if (popPlayer) {
-      popPlayer.playCard(card);
+    let player = this.currentPlayer();
+    if (player.id === id) {
+      if (player.playCard(card)) {
+        this.GameMachine.send('Play');
+        return true;
+      }
     }
+    return false;
   }
 }
 

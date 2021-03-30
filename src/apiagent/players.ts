@@ -11,6 +11,7 @@ routes.get('/players/:roomID', (req, res) => {
   console.log('RoomID: ', roomID);
 
   let players = board.allPlayers(roomID);
+  console.log('players: ', players);
   res.status(200).json({ ...Resp.success, players });
 });
 

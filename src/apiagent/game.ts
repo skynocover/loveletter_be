@@ -32,12 +32,18 @@ routes.post('/game/ready', (req, res) => {
 });
 
 routes.post('/game/playCard', (req, res) => {
-  if (req.body.id === null || req.body.card === null) {
+  let id = req.body.id;
+  let roomID = req.body.roomID;
+  let card = req.body.card;
+  if (id === null || roomID === null || card === null) {
     res.status(200).json(Resp.paramInputEmpty);
     return;
   }
-  board.playCard(req.body.id, req.body.card);
-  res.status(200).json(Resp.success);
+  if (board.playCard(id, roomID, card)) {
+    res.status(200).json(Resp.success);
+  } else {
+    res.status(200).json(Resp.roomIDisNotExist);
+  }
 });
 
 function getConnectedSockets() {

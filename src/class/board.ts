@@ -144,8 +144,12 @@ class Board {
     io().to(roomID).emit('Game', 'ReStart');
   }
 
-  playCard(id: string, card: number) {
-    GameService.send('PlayCard', { id, card });
+  playCard(id: string, roomID: string, card: number) {
+    let room = this.Games.get(roomID);
+    if (room) {
+      return room.playCard(id, card);
+    }
+    return false;
   }
 
   gameReady(roomID: string, playerID: string) {

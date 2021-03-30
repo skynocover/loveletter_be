@@ -6,7 +6,11 @@ export const Resp = {
   // Api Fail
   paramInputEmpty: {
     errorCode: 1000,
-    errorMessage: 'paramInputEmpty',
+    errorMessage: 'param Input Empty',
+  },
+  roomIDisNotExist: {
+    errorCode: 1001,
+    errorMessage: 'roomID is not Exist ',
   },
   // User Fail
   unReady: {
