@@ -82,10 +82,10 @@ export default class Game {
           },
           onEntry: () => {
             let popCard = this.deck.pop();
-            let popPlayer = this.players.pop();
+            let popPlayer = this.currentPlayer();
             if (popCard && popPlayer) {
               popPlayer.drawCard(popCard);
-              this.players.unshift(popPlayer);
+              // this.players.unshift(popPlayer);
               console.log(JSON.stringify(popPlayer));
               io().to(popPlayer.id).emit('draw', popCard.title);
               return true;
@@ -136,6 +136,11 @@ export default class Game {
     let player = this.currentPlayer();
     if (player.id === id) {
       if (player.playCard(card)) {
+        let pop = this.players.pop();
+        if (pop) {
+          this.players.unshift(pop);
+        }
+
         this.GameMachine.send('Play');
         return true;
       }
