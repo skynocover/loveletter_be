@@ -144,10 +144,16 @@ class Board {
     io().to(roomID).emit('Game', 'ReStart');
   }
 
-  playCard(id: string, roomID: string, card: number) {
+  playCard(
+    id: string,
+    roomID: string,
+    card: number,
+    opponent: string,
+    selectCard: string,
+  ) {
     let room = this.Games.get(roomID);
     if (room) {
-      return room.playCard(id, card);
+      return room.playCard(id, card, opponent, selectCard);
     }
     return false;
   }

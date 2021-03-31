@@ -35,11 +35,13 @@ routes.post('/game/playCard', (req, res) => {
   let id = req.body.id;
   let roomID = req.body.roomID;
   let card = req.body.card;
-  if (id === null || roomID === null || card === null) {
+  let content = req.body.content;
+  console.log(JSON.stringify(content));
+  if (id === null || roomID === null || card === null || content === null) {
     res.status(200).json(Resp.paramInputEmpty);
     return;
   }
-  if (board.playCard(id, roomID, card)) {
+  if (board.playCard(id, roomID, card, content.opponent, content.card)) {
     res.status(200).json(Resp.success);
   } else {
     res.status(200).json(Resp.roomIDisNotExist);

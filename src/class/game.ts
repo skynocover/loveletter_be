@@ -77,16 +77,20 @@ export default class Game {
         roundStart: {
           on: {
             Ready: { actions: () => {} },
-            Start: { target: 'beforeStart', actions: () => {} },
+            // Start: { target: 'beforeStart', actions: () => {} },
             Play: { target: 'roundStart' },
+            End: 'endGame',
           },
           onEntry: () => {
             let popCard = this.deck.pop();
+            if (popCard === undefined) {
+              this.GameMachine.send('End');
+              return true;
+            }
             let popPlayer = this.currentPlayer();
             if (popCard && popPlayer) {
               popPlayer.drawCard(popCard);
-              // this.players.unshift(popPlayer);
-              console.log(JSON.stringify(popPlayer));
+              // console.log(JSON.stringify(popPlayer));
               io().to(popPlayer.id).emit('draw', popCard.title);
               return true;
             }
@@ -96,6 +100,12 @@ export default class Game {
             console.log('exit roundStart');
             // io().emit('Game', 'start');
           }, //退出
+        },
+        endGame: {
+          on: {},
+          onEntry: () => {
+            console.log('end game');
+          },
         },
       },
     });
@@ -131,8 +141,10 @@ export default class Game {
   currentPlayer() {
     return this.players[this.players.length - 1];
   }
-  playCard(id: string, card: number) {
-    console.log('game. playcard: ', id, card);
+  playCard(id: string, card: number, opponent: string, selectCard: string) {
+    console.log(
+      `game: ${id} playcard: ${card}, opponent: ${opponent}, selectCard: ${selectCard}`,
+    );
     let player = this.currentPlayer();
     if (player.id === id) {
       if (player.playCard(card)) {
