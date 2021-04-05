@@ -48,6 +48,18 @@ routes.post('/game/playCard', (req, res) => {
   }
 });
 
+routes.post('/game/getCard', (req, res) => {
+  let id = req.body.id;
+  let roomID = req.body.roomID;
+  if (id === null || roomID === null) {
+    res.status(200).json(Resp.paramInputEmpty);
+    return;
+  }
+  res
+    .status(200)
+    .json({ ...Resp.success, handCard: board.getCard(roomID, id) });
+});
+
 function getConnectedSockets() {
   return Object.values(io().of('/').connected);
 }

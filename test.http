@@ -2,3 +2,12 @@
 
 ####
 GET {{url}}/version
+
+###
+POST {{url}}/api/game/getCard
+Content-Type: application/json
+
+{
+    "id":"",
+    "roomID":""
+}

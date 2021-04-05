@@ -145,19 +145,89 @@ export default class Game {
     console.log(
       `game: ${id} playcard: ${card}, opponent: ${opponent}, selectCard: ${selectCard}`,
     );
-    let player = this.currentPlayer();
-    if (player.id === id) {
-      if (player.playCard(card)) {
-        let pop = this.players.pop();
-        if (pop) {
-          this.players.unshift(pop);
-        }
 
-        this.GameMachine.send('Play');
-        return true;
+    let currPlayer = this.currentPlayer();
+    if (currPlayer.id === id) {
+      for (const p of this.players) {
+        if (p.name === opponent) {
+          this.cardCallback(currPlayer, p, card, selectCard);
+        }
       }
+
+      currPlayer.playCard(card);
+
+      let pop = this.players.pop();
+      if (pop) {
+        this.players.unshift(pop);
+      }
+
+      this.GameMachine.send('Play');
+      return true;
     }
     return false;
+  }
+
+  cardCallback(
+    player: player,
+    opponent: player,
+    card: number,
+    selectCard: string,
+  ) {
+    let playCard = player.peekCard(card);
+    if (!playCard) {
+      return;
+    }
+    switch (playCard.title) {
+      case 'guard':
+        if (opponent.peekCard(0)?.title === selectCard) {
+          console.log('kill!!!');
+        }
+        break;
+      case 'priest':
+        console.log(`opponent Card: ${opponent.peekCard(0)?.title}`);
+        break;
+      case 'baron':
+        console.log(`opponent Card: ${opponent.peekCard(0)?.title}`);
+        console.log(`playerCard: ${player.peekOtherCard(card)?.title}`);
+        break;
+      case 'handmaid':
+        break;
+      case 'prince':
+        opponent.playCard(0);
+        let popCard = this.deck.pop();
+        if (popCard) {
+          opponent.drawCard(popCard);
+        }
+        break;
+      case 'king':
+        let tempCard = opponent.handCard[0];
+        opponent.handCard[0] = player.peekOtherCard(card);
+        player.handCard[0] = tempCard;
+
+        break;
+      case 'countess':
+        break;
+      case 'priness':
+        console.log('u lose');
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  getCard(playerID: string): string[] {
+    let card: string[] = [];
+    for (const player of this.players) {
+      if (player.id == playerID) {
+        for (const handCard of player.handCard) {
+          card.push(handCard.title);
+        }
+        break;
+      }
+    }
+    console.log(`get card: ${card}`);
+    return card;
   }
 }
 

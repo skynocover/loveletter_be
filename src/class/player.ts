@@ -11,6 +11,20 @@ export default class Player {
     this.handCard = [];
     this.ready = false;
   }
+  peekCard(index: number): card | null {
+    if (index >= this.handCard.length) {
+      return null;
+    }
+    return this.handCard[index];
+  }
+
+  peekOtherCard(index: number): card {
+    if (index === 0) {
+      return this.handCard[1];
+    }
+    return this.handCard[0];
+  }
+
   playCard(index: number): boolean {
     if (index >= this.handCard.length) {
       return false;

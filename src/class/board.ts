@@ -165,6 +165,14 @@ class Board {
       this.BoardMachine.send('Finish');
     }
   }
+
+  getCard(roomID: string, playerID: string): string[] {
+    let game = this.Games.get(roomID);
+    if (game?.ready(playerID)) {
+      return game.getCard(playerID);
+    }
+    return [];
+  }
 }
 
 const board = new Board();
