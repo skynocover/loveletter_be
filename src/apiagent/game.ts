@@ -55,6 +55,7 @@ routes.post('/game/getCard', (req, res) => {
     res.status(200).json(Resp.paramInputEmpty);
     return;
   }
+  console.log(`getCard: id:${id}, roomID:${roomID}}`);
   res
     .status(200)
     .json({ ...Resp.success, handCard: board.getCard(roomID, id) });

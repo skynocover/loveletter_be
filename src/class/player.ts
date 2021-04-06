@@ -5,11 +5,13 @@ export default class Player {
   id: string;
   name: string;
   ready: boolean;
+  shield: boolean;
   constructor(id: string, name: string) {
     this.id = id;
     this.name = name;
     this.handCard = [];
     this.ready = false;
+    this.shield = false;
   }
   peekCard(index: number): card | null {
     if (index >= this.handCard.length) {
@@ -30,6 +32,7 @@ export default class Player {
       return false;
     }
     this.handCard = this.handCard.splice(index - 1, 1);
+    this.shield = false;
     return true;
   }
   drawCard(card: card) {

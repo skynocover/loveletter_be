@@ -15,6 +15,12 @@ routes.get('/players/:roomID', (req, res) => {
   res.status(200).json({ ...Resp.success, players });
 });
 
+routes.get('/opponent/:roomID', (req, res) => {
+  res
+    .status(200)
+    .json({ ...Resp.success, players: board.opponent(req.params.roomID) });
+});
+
 routes.post('/players', (req, res) => {
   let newPlayer = req.body.player;
   if (newPlayer.id === undefined || newPlayer.name === undefined) {

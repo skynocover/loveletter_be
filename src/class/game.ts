@@ -141,30 +141,30 @@ export default class Game {
   currentPlayer() {
     return this.players[this.players.length - 1];
   }
-  playCard(id: string, card: number, opponent: string, selectCard: string) {
+  playCard(
+    id: string,
+    card: number,
+    opponent: string,
+    selectCard: string,
+  ): boolean {
     console.log(
       `game: ${id} playcard: ${card}, opponent: ${opponent}, selectCard: ${selectCard}`,
     );
 
     let currPlayer = this.currentPlayer();
     if (currPlayer.id === id) {
+      let oppo = new player('', '');
       for (const p of this.players) {
         if (p.name === opponent) {
-          this.cardCallback(currPlayer, p, card, selectCard);
+          oppo = p;
         }
       }
 
-      currPlayer.playCard(card);
-
-      let pop = this.players.pop();
-      if (pop) {
-        this.players.unshift(pop);
-      }
-
-      this.GameMachine.send('Play');
-      return true;
+      return this.cardCallback(currPlayer, oppo, card, selectCard);
+    } else {
+      console.log('aaaa');
+      return false;
     }
-    return false;
   }
 
   cardCallback(
@@ -175,7 +175,8 @@ export default class Game {
   ) {
     let playCard = player.peekCard(card);
     if (!playCard) {
-      return;
+      console.log('peekCard not found');
+      return false;
     }
     switch (playCard.title) {
       case 'guard':
@@ -191,6 +192,7 @@ export default class Game {
         console.log(`playerCard: ${player.peekOtherCard(card)?.title}`);
         break;
       case 'handmaid':
+        player.shield = true;
         break;
       case 'prince':
         opponent.playCard(0);
@@ -214,6 +216,14 @@ export default class Game {
       default:
         break;
     }
+    player.playCard(card);
+    let pop = this.players.pop();
+    if (pop) {
+      this.players.unshift(pop);
+    }
+
+    this.GameMachine.send('Play');
+    return true;
   }
 
   getCard(playerID: string): string[] {
@@ -228,6 +238,16 @@ export default class Game {
     }
     console.log(`get card: ${card}`);
     return card;
+  }
+
+  opponent() {
+    let players = [];
+    for (const player of this.players) {
+      if (!player.shield) {
+        players.push(player);
+      }
+    }
+    return players;
   }
 }
 

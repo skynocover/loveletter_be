@@ -173,6 +173,11 @@ class Board {
     }
     return [];
   }
+
+  opponent(roomID: string) {
+    let room = this.Games.get(roomID);
+    return room?.opponent();
+  }
 }
 
 const board = new Board();
