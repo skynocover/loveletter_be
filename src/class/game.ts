@@ -87,6 +87,9 @@ export default class Game {
               this.GameMachine.send('End');
               return true;
             }
+            if (this.players.length === 1) {
+              this.GameMachine.send('End');
+            }
             let popPlayer = this.currentPlayer();
             if (popCard && popPlayer) {
               popPlayer.drawCard(popCard);
@@ -98,12 +101,28 @@ export default class Game {
           },
           onExit: () => {
             console.log('exit roundStart');
-            // io().emit('Game', 'start');
           }, //退出
         },
         endGame: {
           on: {},
           onEntry: () => {
+            if (this.players.length === 1) {
+              io().to(this.id).emit('end', [this.players[0]]);
+            } else {
+              this.players.sort((a, b) => {
+                return a.handCard[0].value - b.handCard[0].value;
+              });
+              if (
+                this.players[0].handCard[0].value ===
+                this.players[1].handCard[0].value
+              ) {
+                io()
+                  .to(this.id)
+                  .emit('end', [this.players[0], this.players[1]]);
+              } else {
+                io().to(this.id).emit('end', [this.players[0]]);
+              }
+            }
             console.log('end game');
           },
         },
@@ -162,9 +181,13 @@ export default class Game {
 
       return this.cardCallback(currPlayer, oppo, card, selectCard);
     } else {
-      console.log('aaaa');
+      console.log('u r not current player');
       return false;
     }
+  }
+
+  out(player: player) {
+    this.players = this.players.filter((item) => item.name !== player.name);
   }
 
   cardCallback(
@@ -178,27 +201,64 @@ export default class Game {
       console.log('peekCard not found');
       return false;
     }
+    io()
+      .to(this.id)
+      .emit('playCard', `${player.name} play card: ${playCard.title}`);
     switch (playCard.title) {
       case 'guard':
         if (opponent.peekCard(0)?.title === selectCard) {
+          this.out(opponent);
+          io().to(this.id).emit('result', 'out', opponent.name);
           console.log('kill!!!');
         }
         break;
       case 'priest':
         console.log(`opponent Card: ${opponent.peekCard(0)?.title}`);
+        io().to(player.id).emit('result', 'peek', opponent.peekCard(0)?.title);
+
         break;
       case 'baron':
-        console.log(`opponent Card: ${opponent.peekCard(0)?.title}`);
-        console.log(`playerCard: ${player.peekOtherCard(card)?.title}`);
+        let oppoCard = opponent.peekCard(0);
+        let playCard = player.peekOtherCard(card);
+
+        console.log(`opponent Card: ${opponent.peekCard(0)}`);
+        console.log(`playerCard: ${player.peekOtherCard(card)}`);
+        if (!oppoCard || !playCard) {
+          return false;
+        }
+
+        if (oppoCard.value > playCard.value) {
+          io().to(this.id).emit('result', 'baron out', player);
+        } else if (oppoCard.value < playCard.value) {
+          io().to(this.id).emit('result', 'baron out', opponent);
+        } else {
+          io().to(this.id).emit('result', 'baron out', null);
+        }
         break;
       case 'handmaid':
         player.shield = true;
         break;
       case 'prince':
+        let cardplay: string;
+        if (opponent.name === player.name) {
+          if (card === 0) {
+            cardplay = player.handCard[0].title;
+          } else {
+            cardplay = player.handCard[1].title;
+          }
+        } else {
+          cardplay = opponent.handCard[0].title;
+        }
+
         opponent.playCard(0);
+        if (cardplay === 'priness') {
+          io().to(this.id).emit('result', 'priness', opponent.name);
+          return true;
+        }
         let popCard = this.deck.pop();
         if (popCard) {
           opponent.drawCard(popCard);
+          io().to(opponent.id).emit('result', 'prince', popCard.title);
         }
         break;
       case 'king':
@@ -206,11 +266,14 @@ export default class Game {
         opponent.handCard[0] = player.peekOtherCard(card);
         player.handCard[0] = tempCard;
 
+        io().to(opponent.id).emit('result', 'king', opponent.handCard[0].title);
+        io().to(player.id).emit('result', 'king', player.handCard[0].title);
+
         break;
       case 'countess':
         break;
       case 'priness':
-        console.log('u lose');
+        io().to(this.id).emit('result', 'priness', player.name);
         break;
 
       default:
