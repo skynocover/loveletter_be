@@ -38,4 +38,9 @@ export default class Player {
   drawCard(card: card) {
     this.handCard.push(card);
   }
+  reset() {
+    this.handCard = [];
+    this.ready = false;
+    this.shield = false;
+  }
 }

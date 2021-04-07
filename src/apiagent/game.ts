@@ -6,6 +6,7 @@ import { Resp } from '../resp/resp';
 
 const routes = express.Router();
 
+// 遊戲開始
 routes.post('/game/start', (req, res) => {
   if (board.startGame()) {
     res.status(200).json(Resp.success);
@@ -14,15 +15,14 @@ routes.post('/game/start', (req, res) => {
   }
 });
 
+// 遊戲重開
 routes.post('/game/restart', (req, res) => {
   console.log('game restart api, roomID: ', req.body.roomID);
   board.restartGame(req.body.roomID);
-  //   getConnectedSockets().forEach((s) => {
-  //     s.disconnect(true);
-  //   });
   res.status(200).json(Resp.success);
 });
 
+// 玩家開始的確認callback
 routes.post('/game/ready', (req, res) => {
   let roomID = req.body.roomID;
   let playerID = req.body.playerID;
@@ -31,6 +31,7 @@ routes.post('/game/ready', (req, res) => {
   res.status(200).json(Resp.success);
 });
 
+// 玩家出牌
 routes.post('/game/playCard', (req, res) => {
   let id = req.body.id;
   let roomID = req.body.roomID;

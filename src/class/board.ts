@@ -1,5 +1,4 @@
 import player from './player';
-import GameService from '../game/machine';
 import card from './card';
 import { io } from '../socket/socket';
 import Game from './game';
@@ -42,29 +41,6 @@ class Board {
       states: {
         beforeStart: {
           on: {
-            Join: {
-              actions: (context: any, event: any) => {
-                let newPlayer = event.newPlayer;
-                console.log('machine join: ', newPlayer);
-                this.players.push(new player(newPlayer.id, newPlayer.name));
-                io().emit('player', 'add', newPlayer);
-              },
-            },
-            Ready: {
-              actions: (context: any, event: any) => {
-                console.log(event);
-                let name = event.name;
-                let ready = event.ready;
-
-                for (const player of this.players) {
-                  if (player.name === name) {
-                    player.ready = ready;
-                    break;
-                  }
-                }
-                io().emit('player', ready ? 'ready' : 'unReady', name);
-              },
-            },
             Start: 'start',
           },
         },
@@ -90,6 +66,22 @@ class Board {
     return interpret(BoardMachine)
       .onTransition((state, context) => {})
       .start();
+  }
+
+  addPlayer(id: string, name: string) {
+    console.log(`addPlayer id: ${id} name: ${name}`);
+    this.players.push(new player(id, name));
+    io().emit('player', 'add', { id, name });
+  }
+
+  readyPlayer(name: string, ready: boolean) {
+    for (const player of this.players) {
+      if (player.name === name) {
+        player.ready = ready;
+        break;
+      }
+    }
+    io().emit('player', ready ? 'ready' : 'unReady', name);
   }
 
   allPlayers(roomID: string) {
@@ -122,9 +114,7 @@ class Board {
     });
 
     if (unReadyPlayer.length === 0) {
-      // GameService.send('Ready', { players: this.players });
       this.BoardMachine.send('Start');
-
       return true;
     } else {
       return false;
@@ -135,8 +125,7 @@ class Board {
     let room = this.Games.get(roomID);
     if (room) {
       for (const p of room.players) {
-        p.handCard = [];
-        p.ready = false;
+        p.reset();
         this.players.push(p);
       }
     }

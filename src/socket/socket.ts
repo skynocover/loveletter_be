@@ -17,13 +17,6 @@ export const init = (server: http.Server) => {
       `id: ${socket.id}, time: ${dayjs().format('HH:mm:ss')}`,
     );
     _io.emit('newHistory', newhistory);
-    // socket.emit('welcom', 1, 2, 5);
-    // socket.join('game');
-
-    socket.on('msg', (data) => {
-      console.log(data);
-      socket.emit('welcome', { newData: 'newData' });
-    });
 
     socket.on('disconnect', (reason) => {
       console.log(socket.id, ' is disconnect');

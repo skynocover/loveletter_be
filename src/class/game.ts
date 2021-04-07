@@ -35,7 +35,6 @@ export default class Game {
 
   constructor(players: player[], id: string) {
     this.id = id;
-    ///// make the deck
     this.deck = makeNewDeck();
 
     this.players = [...players];
@@ -76,10 +75,10 @@ export default class Game {
         },
         roundStart: {
           on: {
-            Ready: { actions: () => {} },
+            // Ready: { actions: () => {} },
             // Start: { target: 'beforeStart', actions: () => {} },
             Play: { target: 'roundStart' },
-            End: 'endGame',
+            End: 'End',
           },
           onEntry: () => {
             let popCard = this.deck.pop();
@@ -89,21 +88,19 @@ export default class Game {
             }
             if (this.players.length === 1) {
               this.GameMachine.send('End');
+              return true;
             }
             let popPlayer = this.currentPlayer();
             if (popCard && popPlayer) {
               popPlayer.drawCard(popCard);
-              // console.log(JSON.stringify(popPlayer));
               io().to(popPlayer.id).emit('draw', popCard.title);
               return true;
             }
             return false;
           },
-          onExit: () => {
-            console.log('exit roundStart');
-          }, //退出
+          onExit: () => {}, //退出
         },
-        endGame: {
+        End: {
           on: {},
           onEntry: () => {
             if (this.players.length === 1) {
@@ -201,15 +198,14 @@ export default class Game {
       console.log('peekCard not found');
       return false;
     }
-    io()
-      .to(this.id)
-      .emit('playCard', `${player.name} play card: ${playCard.title}`);
+    io().to(this.id).emit('playCard', `${player.name}`, `${playCard.title}`);
     switch (playCard.title) {
       case 'guard':
         if (opponent.peekCard(0)?.title === selectCard) {
           this.out(opponent);
           io().to(this.id).emit('result', 'out', opponent.name);
-          console.log('kill!!!');
+        } else {
+          io().to(this.id).emit('result', 'guard', opponent.name, selectCard);
         }
         break;
       case 'priest':
@@ -242,13 +238,10 @@ export default class Game {
         let cardplay: string;
         if (opponent.name === player.name) {
           if (card === 0) {
-            cardplay = player.handCard[0].title;
-          } else {
             cardplay = player.handCard[1].title;
           }
-        } else {
-          cardplay = opponent.handCard[0].title;
         }
+        cardplay = opponent.handCard[0].title;
 
         opponent.playCard(0);
         if (cardplay === 'priness') {
