@@ -5,7 +5,6 @@ import { Resp } from '../resp/resp';
 const routes = express.Router();
 
 routes.get('/history', (req, res) => {
-  //   console.log(history.get());
   res.status(200).json({ ...Resp.success, history: history.get() });
 });
 

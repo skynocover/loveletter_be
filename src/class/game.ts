@@ -6,7 +6,7 @@ import card, {
   Prince,
   King,
   Countess,
-  Princss,
+  Priness,
 } from './card';
 import player from './player';
 import {
@@ -75,8 +75,6 @@ export default class Game {
         },
         roundStart: {
           on: {
-            // Ready: { actions: () => {} },
-            // Start: { target: 'beforeStart', actions: () => {} },
             Play: { target: 'roundStart' },
             End: 'End',
           },
@@ -93,6 +91,7 @@ export default class Game {
             let popPlayer = this.currentPlayer();
             if (popCard && popPlayer) {
               popPlayer.drawCard(popCard);
+              popPlayer.shield = false;
               io().to(popPlayer.id).emit('draw', popCard.title);
               return true;
             }
@@ -131,10 +130,24 @@ export default class Game {
       .start();
   }
 
+  // 取得遊戲內所有玩家
   allPlayers() {
+    console.log(`allplayers: ${JSON.stringify(this.players)}`);
     return this.players;
   }
 
+  // 取得遊戲內可被指定的對象
+  opponent() {
+    let players = [];
+    for (const player of this.players) {
+      if (!player.shield) {
+        players.push(player);
+      }
+    }
+    return players;
+  }
+
+  // 所有玩家確認準備發牌
   ready(playerID: string) {
     let i = 0;
     console.log(`${playerID} game ready!!!`);
@@ -199,6 +212,7 @@ export default class Game {
       return false;
     }
     io().to(this.id).emit('playCard', `${player.name}`, `${playCard.title}`);
+
     switch (playCard.title) {
       case 'guard':
         if (opponent.peekCard(0)?.title === selectCard) {
@@ -208,32 +222,43 @@ export default class Game {
           io().to(this.id).emit('result', 'guard', opponent.name, selectCard);
         }
         break;
+
       case 'priest':
         console.log(`opponent Card: ${opponent.peekCard(0)?.title}`);
         io().to(player.id).emit('result', 'peek', opponent.peekCard(0)?.title);
-
         break;
+
       case 'baron':
         let oppoCard = opponent.peekCard(0);
         let playCard = player.peekOtherCard(card);
 
-        console.log(`opponent Card: ${opponent.peekCard(0)}`);
-        console.log(`playerCard: ${player.peekOtherCard(card)}`);
+        console.log(`opponent Card: ${JSON.stringify(opponent.peekCard(0))}`);
+        console.log(
+          `playerCard: ${JSON.stringify(player.peekOtherCard(card))}`,
+        );
         if (!oppoCard || !playCard) {
-          return false;
+          for (const p of this.players) {
+            if (p.name !== player.name && !p.shield) {
+              return false;
+            }
+          }
         }
 
-        if (oppoCard.value > playCard.value) {
-          io().to(this.id).emit('result', 'baron out', player);
-        } else if (oppoCard.value < playCard.value) {
-          io().to(this.id).emit('result', 'baron out', opponent);
-        } else {
-          io().to(this.id).emit('result', 'baron out', null);
+        if (oppoCard) {
+          if (oppoCard.value > playCard.value) {
+            io().to(this.id).emit('result', 'baron out', player.name);
+          } else if (oppoCard.value < playCard.value) {
+            io().to(this.id).emit('result', 'baron out', opponent.name);
+          } else {
+            io().to(this.id).emit('result', 'baron out', null);
+          }
         }
         break;
+
       case 'handmaid':
         player.shield = true;
         break;
+
       case 'prince':
         let cardplay: string;
         if (opponent.name === player.name) {
@@ -243,28 +268,45 @@ export default class Game {
         }
         cardplay = opponent.handCard[0].title;
 
-        opponent.playCard(0);
         if (cardplay === 'priness') {
           io().to(this.id).emit('result', 'priness', opponent.name);
-          return true;
+        } else {
+          let popCard = this.deck.pop();
+          if (popCard) {
+            opponent.handCard[0] = popCard;
+            io().to(opponent.id).emit('result', 'prince', popCard.title);
+          }
         }
-        let popCard = this.deck.pop();
-        if (popCard) {
-          opponent.drawCard(popCard);
-          io().to(opponent.id).emit('result', 'prince', popCard.title);
-        }
+
         break;
+
       case 'king':
-        let tempCard = opponent.handCard[0];
-        opponent.handCard[0] = player.peekOtherCard(card);
-        player.handCard[0] = tempCard;
+        console.log(`players before!!!: ${JSON.stringify(this.players)}`);
 
-        io().to(opponent.id).emit('result', 'king', opponent.handCard[0].title);
-        io().to(player.id).emit('result', 'king', player.handCard[0].title);
+        //有可以指定的對象時
+        if (opponent.handCard[0]) {
+          let tempCard = opponent.handCard[0];
+
+          console.log(`!!!!!!opponent card: ${tempCard.title}`);
+          opponent.handCard[0] = player.peekOtherCard(card);
+          io()
+            .to(opponent.id)
+            .emit('result', 'king', player.peekOtherCard(card).title);
+
+          console.log(
+            `!!!!!!!player card: ${player.peekOtherCard(card).title}`,
+          );
+
+          player.handCard[card] = tempCard;
+
+          io().to(player.id).emit('result', 'king', tempCard.title);
+        }
 
         break;
+
       case 'countess':
         break;
+
       case 'priness':
         io().to(this.id).emit('result', 'priness', player.name);
         break;
@@ -272,16 +314,21 @@ export default class Game {
       default:
         break;
     }
+
     player.playCard(card);
+
     let pop = this.players.pop();
     if (pop) {
       this.players.unshift(pop);
     }
 
+    console.log(`players!!!: ${JSON.stringify(this.players)}`);
+
     this.GameMachine.send('Play');
     return true;
   }
 
+  // 玩家取得手上的卡牌
   getCard(playerID: string): string[] {
     let card: string[] = [];
     for (const player of this.players) {
@@ -292,18 +339,8 @@ export default class Game {
         break;
       }
     }
-    console.log(`get card: ${card}`);
+    console.log(`game player${playerID} get card: ${card}`);
     return card;
-  }
-
-  opponent() {
-    let players = [];
-    for (const player of this.players) {
-      if (!player.shield) {
-        players.push(player);
-      }
-    }
-    return players;
   }
 }
 
@@ -334,9 +371,13 @@ function makeNewDeck(): card[] {
     deck.push(new Prince());
   }
 
+  // for (let i = 0; i < 2; i++) {
+  //   deck.push(new King());
+  // }
+
   deck.push(new King());
   deck.push(new Countess());
-  deck.push(new Princss());
+  deck.push(new Priness());
 
   shuffle(deck);
 

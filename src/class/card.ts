@@ -60,7 +60,7 @@ export class Countess extends Card {
 }
 
 // 9 公主
-export class Princss extends Card {
+export class Priness extends Card {
   constructor() {
     super('priness', '棄掉公主時出局', 9);
   }

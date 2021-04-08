@@ -32,7 +32,7 @@ export default class Player {
       return false;
     }
     this.handCard = this.handCard.splice(index - 1, 1);
-    this.shield = false;
+
     return true;
   }
   drawCard(card: card) {

@@ -49,6 +49,7 @@ routes.post('/game/playCard', (req, res) => {
   }
 });
 
+// 取得玩家手上的卡牌
 routes.post('/game/getCard', (req, res) => {
   let id = req.body.id;
   let roomID = req.body.roomID;
@@ -61,9 +62,5 @@ routes.post('/game/getCard', (req, res) => {
     .status(200)
     .json({ ...Resp.success, handCard: board.getCard(roomID, id) });
 });
-
-function getConnectedSockets() {
-  return Object.values(io().of('/').connected);
-}
 
 export { routes as apiGame };
