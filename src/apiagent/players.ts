@@ -10,18 +10,10 @@ const routes = express.Router();
 routes.get('/players/:roomID', (req, res) => {
   let roomID = req.params.roomID;
   console.log('RoomID: ', roomID);
-
   let players = board.allPlayers(roomID);
   console.log('api all players: ', players);
   res.status(200).json({ ...Resp.success, players });
 });
-
-// // 取得房間內的對手
-// routes.get('/opponent/:roomID', (req, res) => {
-//   res
-//     .status(200)
-//     .json({ ...Resp.success, players: board.opponent(req.params.roomID) });
-// });
 
 // 新增玩家
 routes.post('/players', (req, res) => {

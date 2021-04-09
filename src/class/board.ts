@@ -176,15 +176,6 @@ class Board {
   getCard(roomID: string, playerID: string): string[] {
     let game = this.Games.get(roomID);
     return game?.getCard(playerID) || [];
-    // if (game?.ready(playerID)) {
-    //   return game.getCard(playerID);
-    // }
-    // return [];
-  }
-
-  opponent(roomID: string) {
-    let room = this.Games.get(roomID);
-    return room?.opponent();
   }
 }
 

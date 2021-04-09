@@ -1,3 +1,13 @@
+import {
+  Machine,
+  interpret,
+  Interpreter,
+  assign,
+  StateMachine,
+  AnyEventObject,
+} from 'xstate';
+import { io } from '../socket/socket';
+
 import card, {
   Guard,
   Priest,
@@ -9,15 +19,7 @@ import card, {
   Priness,
 } from './card';
 import player from './player';
-import {
-  Machine,
-  interpret,
-  Interpreter,
-  assign,
-  StateMachine,
-  AnyEventObject,
-} from 'xstate';
-import { io } from '../socket/socket';
+import history from '../globals/history';
 
 export default class Game {
   id: string;
@@ -104,6 +106,7 @@ export default class Game {
           onEntry: () => {
             if (this.players.length === 1) {
               io().to(this.id).emit('end', [this.players[0]]);
+              history.push(`${this.players[0].name}`, '贏得公主的芳心');
             } else {
               this.players.sort((a, b) => {
                 return a.handCard[0].value - b.handCard[0].value;
@@ -115,8 +118,13 @@ export default class Game {
                 io()
                   .to(this.id)
                   .emit('end', [this.players[0], this.players[1]]);
+                history.push(
+                  `${this.players[0].name}及${this.players[1].name}`,
+                  '同時贏得公主的芳心,展開長達十本單行本的三角戀',
+                );
               } else {
                 io().to(this.id).emit('end', [this.players[0]]);
+                history.push(`${this.players[0].name}`, '贏得公主的芳心');
               }
             }
             console.log('end game');
@@ -134,17 +142,6 @@ export default class Game {
   allPlayers() {
     console.log(`allplayers: ${JSON.stringify(this.players)}`);
     return this.players;
-  }
-
-  // 取得遊戲內可被指定的對象
-  opponent() {
-    let players = [];
-    for (const player of this.players) {
-      if (!player.shield) {
-        players.push(player);
-      }
-    }
-    return players;
   }
 
   // 所有玩家確認準備發牌
@@ -211,6 +208,9 @@ export default class Game {
       console.log('peekCard not found');
       return false;
     }
+
+    let log = '';
+
     io().to(this.id).emit('playCard', `${player.name}`, `${playCard.title}`);
 
     switch (playCard.title) {
@@ -218,14 +218,17 @@ export default class Game {
         if (opponent.peekCard(0)?.title === selectCard) {
           this.out(opponent);
           io().to(this.id).emit('result', 'out', opponent.name);
+          log = `${player.name} 使用guard 指定${opponent.name}:${selectCard} 成功`;
         } else {
           io().to(this.id).emit('result', 'guard', opponent.name, selectCard);
+          log = `${player.name} 使用guard 指定${opponent.name}:${selectCard} 失敗`;
         }
         break;
 
       case 'priest':
         console.log(`opponent Card: ${opponent.peekCard(0)?.title}`);
         io().to(player.id).emit('result', 'peek', opponent.peekCard(0)?.title);
+        log = `${player.name} 使用priest 指定${opponent.name}`;
         break;
 
       case 'baron':
@@ -247,16 +250,22 @@ export default class Game {
         if (oppoCard) {
           if (oppoCard.value > playCard.value) {
             io().to(this.id).emit('result', 'baron out', player.name);
+            log = `${player.name} 使用baron 指定${opponent.name} 成功自殺`;
+            this.out(player);
           } else if (oppoCard.value < playCard.value) {
             io().to(this.id).emit('result', 'baron out', opponent.name);
+            this.out(opponent);
+            log = `${player.name} 使用baron 指定${opponent.name} 成功擊殺`;
           } else {
             io().to(this.id).emit('result', 'baron out', null);
+            log = `${player.name} 使用baron 指定${opponent.name} 平手`;
           }
         }
         break;
 
       case 'handmaid':
         player.shield = true;
+        log = `${player.name} 使用handmaid 開啟絕對領域`;
         break;
 
       case 'prince':
@@ -269,51 +278,53 @@ export default class Game {
         cardplay = opponent.handCard[0].title;
 
         if (cardplay === 'priness') {
+          this.out(opponent);
           io().to(this.id).emit('result', 'priness', opponent.name);
+          log = `${player.name} 使用prince 使${opponent.name}放棄公主`;
         } else {
           let popCard = this.deck.pop();
           if (popCard) {
             opponent.handCard[0] = popCard;
             io().to(opponent.id).emit('result', 'prince', popCard.title);
+            log = `${player.name} 使用prince 指定${opponent.name}`;
           }
         }
 
         break;
 
       case 'king':
-        console.log(`players before!!!: ${JSON.stringify(this.players)}`);
-
         //有可以指定的對象時
         if (opponent.handCard[0]) {
           let tempCard = opponent.handCard[0];
 
-          console.log(`!!!!!!opponent card: ${tempCard.title}`);
           opponent.handCard[0] = player.peekOtherCard(card);
           io()
             .to(opponent.id)
             .emit('result', 'king', player.peekOtherCard(card).title);
 
-          console.log(
-            `!!!!!!!player card: ${player.peekOtherCard(card).title}`,
-          );
-
           player.handCard[card] = tempCard;
 
           io().to(player.id).emit('result', 'king', tempCard.title);
+          log = `${player.name} 使用king 對${opponent.name} 發動帝王引擎`;
         }
 
         break;
 
       case 'countess':
+        log = `${player.name} 使用countess 効果がない`;
         break;
 
       case 'priness':
+        this.out(player);
         io().to(this.id).emit('result', 'priness', player.name);
+        log = `${player.name} 放棄了公主`;
         break;
 
       default:
         break;
     }
+
+    history.push(`玩家出牌`, log);
 
     player.playCard(card);
 
@@ -370,10 +381,6 @@ function makeNewDeck(): card[] {
   for (let i = 0; i < 2; i++) {
     deck.push(new Prince());
   }
-
-  // for (let i = 0; i < 2; i++) {
-  //   deck.push(new King());
-  // }
 
   deck.push(new King());
   deck.push(new Countess());
